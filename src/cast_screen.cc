@@ -11,6 +11,7 @@ CastScreen::CastScreen(std::string name, size_t width, size_t height)
       screen_height_(height),
       screen_bytes_per_pixel_(4) {
   if (screen_width_ == 0 || screen_height_ == 0) {
+    CAST_ERROR << "Invalid screen dimensions." << std::endl;
     return;
   }
 
@@ -18,6 +19,7 @@ CastScreen::CastScreen(std::string name, size_t width, size_t height)
       ::malloc(screen_width_ * screen_height_ * screen_bytes_per_pixel_));
 
   if (screen_framebuffer_ == nullptr) {
+    CAST_ERROR << "Could not allocate framebuffer." << std::endl;
     return;
   }
 
@@ -55,6 +57,7 @@ bool CastScreen::IsValid() const {
 
 bool CastScreen::Run() {
   if (!valid_) {
+    CAST_ERROR << "Could not run an invalid screen.";
     return false;
   }
 

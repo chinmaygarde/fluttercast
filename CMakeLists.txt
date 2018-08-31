@@ -12,7 +12,18 @@ file(GLOB_RECURSE FLUTTER_CAST_SRC
   "src/*.h"
 )
 
-add_executable(fluttercast ${FLUTTER_CAST_SRC})
-target_link_libraries(fluttercast ${VNC_SERVER_LIBRARIES})
-target_include_directories(fluttercast PRIVATE ${VNC_SERVER_INCLUDE_DIRS})
+link_directories("/home/buzzy/VersionControlled/engine/src/out/host_debug")
 
+add_executable(fluttercast ${FLUTTER_CAST_SRC})
+
+
+target_link_libraries(fluttercast
+  ${VNC_SERVER_LIBRARIES}
+  flutter_engine
+)
+
+target_include_directories(fluttercast
+  PRIVATE
+  ${VNC_SERVER_INCLUDE_DIRS}
+  "/home/buzzy/VersionControlled/engine/src/out/host_debug"
+)
