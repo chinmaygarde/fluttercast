@@ -2,6 +2,7 @@
 #include "flutter_application.h"
 
 #include <chrono>
+#include <vector>
 
 namespace cast {
 
@@ -17,6 +18,11 @@ FlutterApplication::FlutterApplication() {
 #define MY_PROJECT \
   "/home/buzzy/VersionControlled/flutter/examples/flutter_gallery"
 
+  std::vector<const char*> engine_command_line_args = {
+      "--disable-observatory",    //
+      "--dart-non-checked-mode",  //
+  };
+
   FlutterProjectArgs args = {
       .struct_size = sizeof(FlutterProjectArgs),
       .assets_path = MY_PROJECT "/build/flutter_assets",
@@ -25,6 +31,8 @@ FlutterApplication::FlutterApplication() {
       .icu_data_path =
           "/home/buzzy/VersionControlled/engine/src/out/host_debug_unopt/"
           "icudtl.dat",
+      .command_line_argc = static_cast<int>(engine_command_line_args.size()),
+      .command_line_argv = engine_command_line_args.data(),
   };
 
   FlutterEngine engine = nullptr;
