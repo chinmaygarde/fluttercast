@@ -31,7 +31,7 @@ class CastScreen {
   const int screen_width_;
   const int screen_height_;
   const int screen_bytes_per_pixel_;
-  char* screen_framebuffer_ = nullptr;
+  uint8_t* screen_framebuffer_ = nullptr;
   rfbScreenInfoPtr screen_info_ = nullptr;
 
   void OnApplicationDidPresent(const void* allocation,

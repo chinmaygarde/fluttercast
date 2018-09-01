@@ -24,7 +24,7 @@ CastScreen::CastScreen(std::unique_ptr<FlutterApplication> application,
     return;
   }
 
-  screen_framebuffer_ = reinterpret_cast<char*>(
+  screen_framebuffer_ = reinterpret_cast<uint8_t*>(
       ::malloc(screen_width_ * screen_height_ * screen_bytes_per_pixel_));
 
   if (screen_framebuffer_ == nullptr) {
@@ -45,7 +45,7 @@ CastScreen::CastScreen(std::unique_ptr<FlutterApplication> application,
   );
 
   screen_info_->desktopName = screen_name_.c_str();
-  screen_info_->frameBuffer = screen_framebuffer_;
+  screen_info_->frameBuffer = reinterpret_cast<char*>(screen_framebuffer_);
   screen_info_->screenData = this;
   screen_info_->ptrAddEvent = &CastScreen::OnPointerEventCallback;
 
@@ -116,7 +116,15 @@ void CastScreen::OnApplicationDidPresent(const void* allocation,
     return;
   }
 
-  memmove(screen_framebuffer_, allocation, row_bytes * height);
+  const uint8_t* allocation8 = static_cast<const uint8_t*>(allocation);
+
+  for (size_t i = 0, count = row_bytes * height; i < count; i += 4) {
+    screen_framebuffer_[i + 0] = allocation8[i + 2];
+    screen_framebuffer_[i + 1] = allocation8[i + 1];
+    screen_framebuffer_[i + 2] = allocation8[i + 0];
+    screen_framebuffer_[i + 3] = 255;  // Unused Padding.
+  }
+
   rfbMarkRectAsModified(screen_info_, 0, 0, screen_width_, screen_height_);
 }
 
