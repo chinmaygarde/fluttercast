@@ -38,6 +38,13 @@ class CastScreen {
                                size_t row_bytes,
                                size_t height);
 
+  // rfbPtrAddEventProcPtr
+  static void OnPointerEventCallback(int buttonMask,
+                                     int x,
+                                     int y,
+                                     struct _rfbClientRec* cl);
+  void OnPointerEvent(int buttonMask, int x, int y, struct _rfbClientRec* cl);
+
   CAST_DISALLOW_COPY_AND_ASSIGN(CastScreen);
 };
 

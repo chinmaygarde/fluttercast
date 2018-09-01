@@ -46,6 +46,8 @@ CastScreen::CastScreen(std::unique_ptr<FlutterApplication> application,
 
   screen_info_->desktopName = screen_name_.c_str();
   screen_info_->frameBuffer = screen_framebuffer_;
+  screen_info_->screenData = this;
+  screen_info_->ptrAddEvent = &CastScreen::OnPointerEventCallback;
 
   rfbInitServer(screen_info_);
 
@@ -84,6 +86,7 @@ bool CastScreen::Run() {
   }
 
   while (rfbIsActive(screen_info_)) {
+    application_->ProcessEvents();
     rfbProcessEvents(screen_info_, screen_info_->deferUpdateTime * 1000);
   }
 
@@ -114,6 +117,30 @@ void CastScreen::OnApplicationDidPresent(const void* allocation,
   }
 
   memmove(screen_framebuffer_, allocation, row_bytes * height);
+  rfbMarkRectAsModified(screen_info_, 0, 0, screen_width_, screen_height_);
+}
+
+void CastScreen::OnPointerEventCallback(int buttonMask,
+                                        int x,
+                                        int y,
+                                        struct _rfbClientRec* cl) {
+  reinterpret_cast<CastScreen*>(cl->screen->screenData)
+      ->OnPointerEvent(buttonMask, x, y, cl);
+}
+
+void CastScreen::OnPointerEvent(int buttonMask,
+                                int x,
+                                int y,
+                                struct _rfbClientRec* cl) {
+  if (!valid_) {
+    CAST_ERROR << "Pointer events on in invalid screen." << std::endl;
+    return;
+  }
+
+  if (!application_->SendPointerEvent(buttonMask, x, y)) {
+    CAST_ERROR << "Could not send pointer events to application." << std::endl;
+    return;
+  }
 }
 
 }  // namespace cast

@@ -1,6 +1,8 @@
 
 #include "flutter_application.h"
 
+#include <chrono>
+
 namespace cast {
 
 static_assert(FLUTTER_ENGINE_VERSION == 1, "");
@@ -89,6 +91,46 @@ bool FlutterApplication::PresentSurface(const void* allocation,
   }
   present_callback_(allocation, row_bytes, height);
   return true;
+}
+
+bool FlutterApplication::SendPointerEvent(int button, int x, int y) {
+  if (!valid_) {
+    CAST_ERROR << "Pointer events on an invalid application." << std::endl;
+    return false;
+  }
+
+  // Simple hover event. Nothing to do.
+  if (last_button_ == 0 && button == 0) {
+    return true;
+  }
+
+  FlutterPointerPhase phase = kCancel;
+
+  if (last_button_ == 0 && button != 0) {
+    phase = kDown;
+  } else if (last_button_ == button) {
+    phase = kMove;
+  } else {
+    phase = kUp;
+  }
+
+  last_button_ = button;
+  return SendFlutterPointerEvent(phase, x, y);
+}
+
+bool FlutterApplication::SendFlutterPointerEvent(FlutterPointerPhase phase,
+                                                 double x,
+                                                 double y) {
+  FlutterPointerEvent event = {};
+  event.struct_size = sizeof(event);
+  event.phase = phase;
+  event.x = x;
+  event.y = y;
+  event.timestamp =
+      std::chrono::duration_cast<std::chrono::microseconds>(
+          std::chrono::high_resolution_clock::now().time_since_epoch())
+          .count();
+  return FlutterEngineSendPointerEvent(engine_, &event, 1) == kSuccess;
 }
 
 }  // namespace cast
