@@ -1,12 +1,59 @@
 
 #include "flutter_application.h"
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include <chrono>
+#include <sstream>
 #include <vector>
 
 namespace cast {
 
 static_assert(FLUTTER_ENGINE_VERSION == 1, "");
+
+static const char* kICUDataFileName = "icudtl.dat";
+
+static std::string GetExecutableDirectory() {
+  char executable_path[1024] = {0};
+  std::stringstream stream;
+  stream << "/proc/" << getpid() << "/exe";
+  auto path = stream.str();
+  auto executable_path_size =
+      ::readlink(path.c_str(), executable_path, sizeof(executable_path));
+  if (executable_path_size <= 0) {
+    return "";
+  }
+
+  auto path_string =
+      std::string{executable_path, static_cast<size_t>(executable_path_size)};
+
+  auto found = path_string.find_last_of('/');
+
+  if (found == std::string::npos) {
+    return "";
+  }
+
+  return path_string.substr(0, found + 1);
+}
+
+static std::string GetICUDataPath() {
+  auto exe_dir = GetExecutableDirectory();
+  if (exe_dir == "") {
+    return "";
+  }
+  std::stringstream stream;
+  stream << exe_dir << kICUDataFileName;
+
+  auto icu_path = stream.str();
+
+  if (::access(icu_path.c_str(), R_OK) != 0) {
+    CAST_ERROR << "Could not find " << icu_path << std::endl;
+    return "";
+  }
+
+  return icu_path;
+}
 
 FlutterApplication::FlutterApplication() {
   FlutterRendererConfig config = {};
@@ -23,14 +70,21 @@ FlutterApplication::FlutterApplication() {
       "--dart-non-checked-mode",  //
   };
 
+  auto icu_data_path = GetICUDataPath();
+
+  if (icu_data_path == "") {
+    CAST_ERROR << "Could not find ICU data. It should be placed next to the "
+                  "executable but it wasn't there."
+               << std::endl;
+    return;
+  }
+
   FlutterProjectArgs args = {
       .struct_size = sizeof(FlutterProjectArgs),
       .assets_path = MY_PROJECT "/build/flutter_assets",
       .main_path = "",
       .packages_path = "",
-      .icu_data_path =
-          "/home/buzzy/VersionControlled/engine/src/out/host_debug_unopt/"
-          "icudtl.dat",
+      .icu_data_path = icu_data_path.c_str(),
       .command_line_argc = static_cast<int>(engine_command_line_args.size()),
       .command_line_argv = engine_command_line_args.data(),
   };
