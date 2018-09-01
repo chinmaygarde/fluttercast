@@ -12,7 +12,7 @@ file(GLOB_RECURSE FLUTTER_CAST_SRC
   "src/*.h"
 )
 
-link_directories("/home/buzzy/VersionControlled/engine/src/out/host_debug")
+link_directories("/home/buzzy/VersionControlled/engine/src/out/host_debug_unopt")
 
 add_executable(fluttercast ${FLUTTER_CAST_SRC})
 
@@ -25,5 +25,5 @@ target_link_libraries(fluttercast
 target_include_directories(fluttercast
   PRIVATE
   ${VNC_SERVER_INCLUDE_DIRS}
-  "/home/buzzy/VersionControlled/engine/src/out/host_debug"
+  "/home/buzzy/VersionControlled/engine/src/out/host_debug_unopt"
 )

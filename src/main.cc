@@ -6,14 +6,14 @@
 #include "flutter_application.h"
 
 int main(int argc, char* argv[]) {
-  cast::FlutterApplication application;
+  auto application = std::make_unique<cast::FlutterApplication>();
 
-  if (!application.IsValid()) {
+  if (!application->IsValid()) {
     CAST_ERROR << "Could not run the Flutter application." << std::endl;
     return EXIT_FAILURE;
   }
 
-  cast::CastScreen screen("Sample Cast", 800, 600);
+  cast::CastScreen screen(std::move(application), "Sample Cast", 800, 600);
 
   if (!screen.IsValid()) {
     CAST_ERROR << "Could not create the cast screen." << std::endl;

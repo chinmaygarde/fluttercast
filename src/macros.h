@@ -11,4 +11,4 @@
   CAST_DISALLOW_ASSIGN(TypeName)
 
 #define CAST_LOG std::cout
-#define CAST_ERROR std::cerr << "Error "
+#define CAST_ERROR std::cerr << "Error: "
