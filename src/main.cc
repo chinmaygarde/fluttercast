@@ -13,7 +13,8 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  cast::CastScreen screen(std::move(application), "Sample Cast", 800, 600);
+  cast::CastScreen screen(std::move(application), "Flutter Gallery", 320 * 2,
+                          480 * 2);
 
   if (!screen.IsValid()) {
     CAST_ERROR << "Could not create the cast screen." << std::endl;
