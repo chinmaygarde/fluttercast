@@ -47,6 +47,8 @@ CastScreen::CastScreen(std::unique_ptr<FlutterApplication> application,
   screen_info_->desktopName = screen_name_.c_str();
   screen_info_->frameBuffer = reinterpret_cast<char*>(screen_framebuffer_);
   screen_info_->screenData = this;
+  screen_info_->neverShared = true;
+  screen_info_->newClientHook = &CastScreen::OnClientAddedCallback;
   screen_info_->ptrAddEvent = &CastScreen::OnPointerEventCallback;
 
   rfbInitServer(screen_info_);
@@ -149,6 +151,31 @@ void CastScreen::OnPointerEvent(int buttonMask,
     CAST_ERROR << "Could not send pointer events to application." << std::endl;
     return;
   }
+}
+
+rfbNewClientAction CastScreen::OnClientAddedCallback(struct _rfbClientRec* cl) {
+  bool should_add =
+      reinterpret_cast<CastScreen*>(cl->screen->screenData)->OnClientAdded();
+  if (!should_add) {
+    return RFB_CLIENT_REFUSE;
+  }
+  cl->clientGoneHook = &CastScreen::OnClientRemovedCallback;
+  return RFB_CLIENT_ACCEPT;
+}
+
+bool CastScreen::OnClientAdded() {
+  client_count_++;
+  CAST_LOG << "Client Count: " << client_count_;
+  return true;
+}
+
+void CastScreen::OnClientRemovedCallback(struct _rfbClientRec* cl) {
+  reinterpret_cast<CastScreen*>(cl->screen->screenData)->OnClientRemoved();
+}
+
+void CastScreen::OnClientRemoved() {
+  client_count_--;
+  CAST_LOG << "Client Count: " << client_count_;
 }
 
 }  // namespace cast

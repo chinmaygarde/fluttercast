@@ -33,6 +33,7 @@ class CastScreen {
   const int screen_bytes_per_pixel_;
   uint8_t* screen_framebuffer_ = nullptr;
   rfbScreenInfoPtr screen_info_ = nullptr;
+  size_t client_count_ = 0;
 
   void OnApplicationDidPresent(const void* allocation,
                                size_t row_bytes,
@@ -44,6 +45,14 @@ class CastScreen {
                                      int y,
                                      struct _rfbClientRec* cl);
   void OnPointerEvent(int buttonMask, int x, int y, struct _rfbClientRec* cl);
+
+  // rfbNewClientHookPtr
+  static rfbNewClientAction OnClientAddedCallback(struct _rfbClientRec* cl);
+  bool OnClientAdded();
+
+  // ClientGoneHookPtr
+  static void OnClientRemovedCallback(struct _rfbClientRec* cl);
+  void OnClientRemoved();
 
   CAST_DISALLOW_COPY_AND_ASSIGN(CastScreen);
 };
