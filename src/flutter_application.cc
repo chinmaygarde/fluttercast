@@ -82,8 +82,6 @@ FlutterApplication::FlutterApplication() {
   FlutterProjectArgs args = {
       .struct_size = sizeof(FlutterProjectArgs),
       .assets_path = MY_PROJECT "/build/flutter_assets",
-      .main_path = "",
-      .packages_path = "",
       .icu_data_path = icu_data_path.c_str(),
       .command_line_argc = static_cast<int>(engine_command_line_args.size()),
       .command_line_argv = engine_command_line_args.data(),
